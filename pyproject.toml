@@ -1,0 +1,34 @@
+[project]
+name = "poc-webhooks-polling"
+version = "0.1.0"
+description = "Prova de conceito do TCC: comparação experimental entre webhooks, polling e arranjo híbrido"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    # Biblioteca de referência do Standard Webhooks, usada SOMENTE nos testes
+    # de compatibilidade (a PoC tem implementação própria da assinatura).
+    "standardwebhooks",
+    # Análise dos resultados (módulo poc.analise)
+    "numpy",
+    "scipy",
+    "matplotlib",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/poc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
