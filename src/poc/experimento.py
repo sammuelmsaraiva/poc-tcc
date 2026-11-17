@@ -507,7 +507,8 @@ RAPIDO = {"n_eventos": 20, "n": 20, "duracao": 1000.0}
 
 
 async def executar(cenarios: list[str], repeticoes: list[int], saida: Path,
-                   rapido: bool, semente_base: int) -> None:
+                   rapido: bool, semente_base: int,
+                   filtro: dict[str, Any] | None = None) -> None:
     """Roda as repetições pedidas de cada cenário.
 
     A semente depende só de (cenário, configuração, repetição), não de quais
@@ -515,6 +516,8 @@ async def executar(cenarios: list[str], repeticoes: list[int], saida: Path,
     própria gera exatamente o mesmo que rodá-la dentro da série completa.
     Cada configuração deixa uma linha em log_execucao.csv com início e fim
     (horário local), para preencher as durações efetivas da Seção 3.6.
+    Com ``filtro``, roda só as configurações cujos parâmetros coincidem com
+    ele; o índice (e portanto a semente) continua sendo o da grade completa.
     """
     saida.mkdir(parents=True, exist_ok=True)
     registro = Registro(str(saida / "experimento.sqlite"))
@@ -526,6 +529,8 @@ async def executar(cenarios: list[str], repeticoes: list[int], saida: Path,
             f_log.write("cenario,parametros,repeticao,semente,inicio,fim,duracao_s\n")
         for nome in cenarios:
             for indice, (funcao, params) in enumerate(GRADE[nome]):
+                if filtro and any(params.get(k) != v for k, v in filtro.items()):
+                    continue
                 for rep in repeticoes:
                     semente = (semente_base + 10_000 * rep + 100 * indice
                                + list(GRADE).index(nome))
@@ -571,6 +576,9 @@ def main() -> None:
     ap.add_argument("--rapido", action="store_true",
                     help="tempos ÷ 50 e 20 eventos: só para conferir que tudo roda")
     ap.add_argument("--semente-base", type=int, default=2026)
+    ap.add_argument("--config", type=json.loads, default=None,
+                    help='roda só as configurações com esses parâmetros, em JSON,'
+                         ' por exemplo \'{"T": 30, "D": 15}\' (semente inalterada)')
     ap.add_argument("--permitir-sem-commit", action="store_true",
                     help="só para ensaios: aceita rodar sem commit ou com alterações")
     a = ap.parse_args()
@@ -581,7 +589,7 @@ def main() -> None:
                  "(ou use --permitir-sem-commit num ensaio).")
     cenarios = list(GRADE) if a.cenario == "todos" else [a.cenario]
     reps = [a.repeticao] if a.repeticao else list(range(1, a.repeticoes + 1))
-    asyncio.run(executar(cenarios, reps, a.saida, a.rapido, a.semente_base))
+    asyncio.run(executar(cenarios, reps, a.saida, a.rapido, a.semente_base, a.config))
 
 
 if __name__ == "__main__":

@@ -70,3 +70,23 @@ async def test_falha_lenta_depois_gera_duplicados_no_servidor_real():
     assert r["conhecidos_receptor"] == 5   # completude medida no receptor
     assert r["entregues_origem"] < 5       # a origem acha que falhou
     assert r["duplicados"] > 0
+
+
+async def test_filtro_de_configuracao_mantem_as_sementes(tmp_path, monkeypatch):
+    """Refazer só uma configuração usa a mesma semente da grade completa."""
+    from poc import experimento
+
+    def grade_falsa(destino):
+        async def funcao(ex, **params):
+            destino.append((params["T"], params["D"], ex.repeticao, ex.semente))
+            return {}
+        return [(funcao, {"T": T, "D": D}) for T in (5, 30) for D in (0, 15)]
+
+    completa, filtrada = [], []
+    monkeypatch.setattr(experimento, "GRADE", {"h1": grade_falsa(completa)})
+    await experimento.executar(["h1"], [2, 4], tmp_path / "a", False, 2026)
+    monkeypatch.setattr(experimento, "GRADE", {"h1": grade_falsa(filtrada)})
+    await experimento.executar(["h1"], [2, 4], tmp_path / "b", False, 2026,
+                               {"T": 30, "D": 15})
+    assert filtrada == [x for x in completa if x[:2] == (30, 15)]
+    assert len(filtrada) == 2
