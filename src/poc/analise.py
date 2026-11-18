@@ -35,6 +35,22 @@ from scipy import stats
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.ticker import ScalarFormatter  # noqa: E402
+
+
+class _FormatoVirgula(ScalarFormatter):
+    """Rótulos dos eixos com vírgula decimal, como no texto do TCC."""
+
+    def __call__(self, x, pos=None):
+        return super().__call__(x, pos).replace(".", ",")
+
+
+def _virgula(fig) -> None:
+    """Aplica a vírgula decimal aos eixos lineares de todos os gráficos."""
+    for ax in fig.axes:
+        for eixo in (ax.xaxis, ax.yaxis):
+            if eixo.get_scale() == "linear":
+                eixo.set_major_formatter(_FormatoVirgula())
 
 # ------------------------------------------------------------ estatística ----
 
@@ -187,7 +203,7 @@ def analisar_h1(d: Dados, saida: Path) -> tuple[list[dict], list[str]]:
         ax.set_ylabel("latência de detecção (s)")
         ax.set_title("Polling (esquerda) × webhook (direita) por configuração")
         fig.tight_layout()
-        fig.savefig(saida / "fig_h1_latencia.png", dpi=200)
+        _virgula(fig); fig.savefig(saida / "fig_h1_latencia.png", dpi=200)
         plt.close(fig)
     return linhas, veredito
 
@@ -215,7 +231,7 @@ def analisar_h2(d: Dados, saida: Path) -> tuple[list[dict], list[str]]:
     ax.set_xlabel("eventos por intervalo de consulta (λT)")
     ax.set_ylabel("requisições no período")
     ax.legend(fontsize=8); fig.tight_layout()
-    fig.savefig(saida / "fig_h2_custo.png", dpi=200); plt.close(fig)
+    _virgula(fig); fig.savefig(saida / "fig_h2_custo.png", dpi=200); plt.close(fig)
     gravar_csv(saida / "tabela_h2_custo.csv", linhas)
 
     escala, fig2 = [], None
@@ -251,7 +267,7 @@ def analisar_h2(d: Dados, saida: Path) -> tuple[list[dict], list[str]]:
             ax2.plot([n for n, *_ in ns], [r for _, r, *_ in ns], "o-", label=f"polling P={P}")
         ax2.set_xlabel("empresas atendidas (N)"); ax2.set_ylabel("respostas 429 no período")
         ax2.legend(); fig2.tight_layout()
-        fig2.savefig(saida / "fig_h2_escala.png", dpi=200); plt.close(fig2)
+        _virgula(fig2); fig2.savefig(saida / "fig_h2_escala.png", dpi=200); plt.close(fig2)
     return linhas + escala, veredito
 
 
@@ -306,7 +322,7 @@ def analisar_h3(d: Dados, saida: Path) -> tuple[list[dict], list[str]]:
         ax.set_xlabel("perda induzida no webhook (%)")
         ax.set_ylabel("requisições híbrido ÷ webhook")
         ax.legend(fontsize=8); fig.tight_layout()
-        fig.savefig(saida / "fig_h3_hibrido.png", dpi=200); plt.close(fig)
+        _virgula(fig); fig.savefig(saida / "fig_h3_hibrido.png", dpi=200); plt.close(fig)
     return linhas, veredito
 
 
