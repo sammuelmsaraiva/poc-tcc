@@ -6,6 +6,15 @@ Autor: Sammuel Moura Saraiva. Código gerado com auxílio de ferramenta de IA e 
 
 Todos os dados são fictícios.
 
+## Dados do experimento
+
+Os dados brutos e as análises usados na monografia estão publicados na release
+[`v1.0-tcc`](https://github.com/sammuelmsaraiva/poc-tcc/releases/tag/v1.0-tcc):
+
+- `20261116-151406.zip`: execução longa original (16–17/11/2026), versão 2372873;
+- `20261117-h1-refacao.zip`: as 5 repetições da H1 refeitas com as mesmas sementes, versão 4725708;
+- `20261117-final.zip`: conjunto analisado no Capítulo 6 (originais afetadas substituídas pelas refeitas), com tabelas, figuras e relatório gerados pela versão 94feb7c.
+
 ## Como rodar
 
 Requer Python 3.12 e [uv](https://docs.astral.sh/uv/).
